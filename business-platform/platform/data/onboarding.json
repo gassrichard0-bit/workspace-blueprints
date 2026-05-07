@@ -1,0 +1,47 @@
+[
+  {
+    "id": "onboarding-1777251341538",
+    "clientId": "client-1777251341535",
+    "clientName": "Cedar & Pine",
+    "owner": "Richard",
+    "dueDate": "2026-04-27T00:55:41.535Z",
+    "status": "In progress",
+    "items": [
+      "Kickoff scheduled",
+      "Access collected",
+      "Internal owner confirmed"
+    ],
+    "createdAt": "2026-04-27T00:55:41.535Z",
+    "updatedAt": "2026-04-27T00:55:41.535Z"
+  },
+  {
+    "id": "onboarding-001",
+    "clientId": "client-001",
+    "clientName": "Harbor Health",
+    "owner": "Richard",
+    "dueDate": "2026-04-25T17:00:00.000Z",
+    "status": "Blocked",
+    "items": [
+      "Signed scope",
+      "Brand assets",
+      "Kickoff scheduling"
+    ],
+    "createdAt": "2026-04-25T09:15:00.000Z",
+    "updatedAt": "2026-04-25T09:15:00.000Z"
+  },
+  {
+    "id": "onboarding-002",
+    "clientId": "client-003",
+    "clientName": "Cedar & Pine",
+    "owner": "Avery",
+    "dueDate": "2026-04-26T17:00:00.000Z",
+    "status": "In progress",
+    "items": [
+      "Primary contacts",
+      "Access collection",
+      "Delivery handoff"
+    ],
+    "createdAt": "2026-04-25T09:20:00.000Z",
+    "updatedAt": "2026-04-25T09:20:00.000Z"
+  }
+]

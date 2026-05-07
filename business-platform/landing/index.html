@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Video & Social Media Agency | Done-For-You Content Pipeline</title>
+  <meta name="description" content="Turn your raw videos into a full month of highly-converting shorts and written posts using our automated AI Creative Director. Starting at $297/mo." />
+  <meta name="keywords" content="AI video agency, short form video, done for you content, social media management, automated content pipeline" />
+  <meta name="google-site-verification" content="jODhDMXzuo_FmyKoLQNN0sRUdVkerQHLCmbGeuZ-vCQ" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070b0f;
+      --surface: #0f1419;
+      --surface2: #161d26;
+      --border: rgba(255,255,255,0.07);
+      --accent: #00e5a0;
+      --accent-dim: rgba(0,229,160,0.12);
+      --text: #f0f4f8;
+      --muted: #8492a6;
+      --white: #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 40px;
+      background: rgba(7,11,15,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .nav-cta {
+      background: var(--accent); color: #000; font-weight: 700;
+      padding: 10px 22px; border-radius: 999px; font-size: 0.9rem;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      padding: 140px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(0,229,160,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 999px;
+      border: 1px solid var(--accent); color: var(--accent);
+      font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; margin-bottom: 28px;
+      background: var(--accent-dim);
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      font-weight: 900; line-height: 1.02;
+      letter-spacing: -0.03em;
+      max-width: 14ch;
+      margin: 0 auto 24px;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p {
+      max-width: 52ch; font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--muted); margin: 0 auto 40px; line-height: 1.65;
+    }
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: #000; font-weight: 700;
+      padding: 16px 32px; border-radius: 999px; font-size: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 40px rgba(0,229,160,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(0,229,160,0.5); }
+    .btn-secondary {
+      background: transparent; color: var(--text); font-weight: 600;
+      padding: 16px 32px; border-radius: 999px; font-size: 1rem;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.3); }
+    .hero-proof {
+      margin-top: 56px;
+      display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+    }
+    .proof-stat strong { display: block; font-size: 2rem; font-weight: 800; color: var(--accent); }
+    .proof-stat span { font-size: 0.85rem; color: var(--muted); }
+
+    /* SECTION SHARED */
+    section { padding: 100px 24px; }
+    .container { max-width: 1080px; margin: 0 auto; }
+    .section-tag {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+      letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 18px;
+    }
+    .section-sub { color: var(--muted); max-width: 52ch; line-height: 1.65; }
+
+    /* HOW IT WORKS */
+    .how { background: var(--surface); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+    .step-card {
+      padding: 32px; border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      position: relative;
+    }
+    .step-num {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--accent-dim); border: 1px solid var(--accent);
+      color: var(--accent); font-weight: 800; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .step-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+    .step-card p { color: var(--muted); font-size: 0.95rem; }
+
+    /* WHAT YOU GET */
+    .deliverables-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 16px; margin-top: 56px;
+    }
+    .d-card {
+      padding: 28px; border-radius: 18px;
+      border: 1px solid var(--border); background: var(--surface);
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .d-icon {
+      font-size: 1.6rem; flex-shrink: 0; margin-top: 2px;
+    }
+    .d-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .d-card p { color: var(--muted); font-size: 0.9rem; }
+
+    /* PRICING */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px; margin-top: 56px;
+    }
+    .price-card {
+      padding: 36px 28px; border-radius: 22px;
+      border: 1px solid var(--border); background: var(--surface);
+      text-align: center; position: relative;
+    }
+    .price-card.featured {
+      border-color: var(--accent);
+      background: linear-gradient(160deg, #0a1f18 0%, var(--surface) 100%);
+      box-shadow: 0 0 60px rgba(0,229,160,0.12);
+    }
+    .price-badge {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #000; font-size: 0.75rem; font-weight: 800;
+      padding: 5px 16px; border-radius: 999px; white-space: nowrap;
+    }
+    .price-name { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .price-amount { font-size: 3rem; font-weight: 900; letter-spacing: -0.03em; color: var(--white); }
+    .price-amount span { font-size: 1rem; font-weight: 500; color: var(--muted); }
+    .price-desc { color: var(--muted); font-size: 0.9rem; margin: 10px 0 24px; }
+    .price-features { list-style: none; text-align: left; margin-bottom: 32px; display: grid; gap: 10px; }
+    .price-features li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.92rem; }
+    .price-features li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+    .price-btn {
+      display: block; width: 100%; padding: 14px;
+      border-radius: 999px; font-weight: 700; font-size: 0.95rem;
+      text-align: center; border: 1px solid var(--border);
+      transition: all 0.2s; cursor: pointer;
+      background: transparent; color: var(--text);
+    }
+    .price-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .price-card.featured .price-btn {
+      background: var(--accent); color: #000; border-color: var(--accent);
+    }
+    .price-card.featured .price-btn:hover { opacity: 0.88; }
+
+    /* FAQ */
+    .faq { background: var(--surface); }
+    .faq-list { margin-top: 48px; display: grid; gap: 14px; max-width: 720px; }
+    details {
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px 24px; background: var(--surface2);
+    }
+    summary {
+      font-weight: 600; cursor: pointer; list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 1rem;
+    }
+    summary::after { content: '+'; color: var(--accent); font-size: 1.3rem; font-weight: 300; }
+    details[open] summary::after { content: '−'; }
+    details p { margin-top: 14px; color: var(--muted); font-size: 0.95rem; line-height: 1.65; }
+
+    /* CONTACT FORM */
+    .contact { background: var(--bg); }
+    .form-wrap {
+      max-width: 580px; margin: 0 auto;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 24px; padding: 44px;
+    }
+    .form-wrap h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
+    .form-wrap p { color: var(--muted); margin-bottom: 32px; }
+    .field { display: grid; gap: 8px; margin-bottom: 18px; }
+    .field label { font-size: 0.88rem; font-weight: 600; color: var(--muted); }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 14px 16px;
+      border-radius: 12px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text);
+      font: inherit; font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select, .field textarea:focus {
+      outline: none; border-color: var(--accent);
+    }
+    .field select option { background: var(--surface2); }
+    .submit-btn {
+      width: 100%; padding: 16px;
+      background: var(--accent); color: #000; font-weight: 800;
+      font-size: 1rem; border: none; border-radius: 999px; cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      margin-top: 8px;
+    }
+    .submit-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    #form-success {
+      display: none; text-align: center; padding: 24px;
+      color: var(--accent); font-weight: 700; font-size: 1.05rem;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted); font-size: 0.88rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 860px) {
+      nav { padding: 16px 20px; }
+      .steps, .pricing-grid { grid-template-columns: 1fr; }
+      .deliverables-grid { grid-template-columns: 1fr; }
+      .form-wrap { padding: 28px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">ContentAI</span>
+  <div style="display: flex; gap: 16px; align-items: center;">
+    <a href="/client.html" style="font-size: 0.9rem; font-weight: 600; color: var(--muted); transition: color 0.2s;" onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='var(--muted)'">Client Portal</a>
+    <a href="#contact" class="nav-cta">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">✦ Automated AI Content Pipeline</div>
+  <h1>Turn Your Raw Videos Into a Full Month of Content.</h1>
+  <p>You upload a raw talking-head video. Our AI extracts the best clips, writes the hooks, and generates all your written posts. 100% done-for-you across YouTube, TikTok, and LinkedIn.</p>
+  <div class="hero-btns">
+    <a href="#contact" class="btn-primary">Build My Content Pipeline →</a>
+    <a href="#how" class="btn-secondary">See How It Works</a>
+  </div>
+  <div class="hero-proof">
+    <div class="proof-stat"><strong>1</strong><span>raw video needed</span></div>
+    <div class="proof-stat"><strong>15+</strong><span>assets generated</span></div>
+    <div class="proof-stat"><strong>48h</strong><span>turnaround time</span></div>
+    <div class="proof-stat"><strong>100%</strong><span>done for you</span></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <p class="section-tag">How it works</p>
+    <h2 class="section-title">Three steps. Then we handle everything.</h2>
+    <p class="section-sub">No long onboarding. No constant back-and-forth. Just great content, delivered every month.</p>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Upload Your Raw Video</h3>
+        <p>Record a 5-10 minute talking head video, podcast, or Zoom call. Drop the raw file securely into your Client Portal.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>AI Creative Director Processing</h3>
+        <p>Our Gemini-powered AI watches your video, selects the best 15-60s clips, and writes compelling hooks, themes, and captions.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Review & Publish</h3>
+        <p>You get a dashboard of ready-to-post Video Shorts and written LinkedIn/X threads. Approve what you love, and we distribute it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section id="deliverables">
+  <div class="container">
+    <p class="section-tag">What's included</p>
+    <h2 class="section-title">Everything you need to show up consistently.</h2>
+    <div class="deliverables-grid">
+      <div class="d-card"><div class="d-icon">🎬</div><div><h3>AI Video Curation</h3><p>We find the gold in your raw footage and turn it into highly engaging, scroll-stopping clips.</p></div></div>
+      <div class="d-card"><div class="d-icon">✍️</div><div><h3>Multi-Platform Written Content</h3><p>Your video transcripts are repurposed into engaging LinkedIn threads and X posts.</p></div></div>
+      <div class="d-card"><div class="d-icon">🚀</div><div><h3>Dedicated Client Portal</h3><p>A secure hub to easily upload your Google Drive links and track your content pipeline.</p></div></div>
+      <div class="d-card"><div class="d-icon">📅</div><div><h3>Content Calendar Delivery</h3><p>Receive a clear schedule showing exactly when each Short and Post goes out.</p></div></div>
+      <div class="d-card"><div class="d-icon">🔁</div><div><h3>Unlimited Revisions</h3><p>Not happy with a hook or script? We'll rewrite it until it sounds exactly like you.</p></div></div>
+      <div class="d-card"><div class="d-icon">⚡</div><div><h3>48-Hour Turnaround</h3><p>Your first batch of processed videos and posts are ready within 2 business days.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background: var(--surface);">
+  <div class="container">
+    <p class="section-tag">Pricing</p>
+    <h2 class="section-title">Simple, flat monthly pricing.</h2>
+    <p class="section-sub">No setup fees. No contracts. Cancel anytime. Start getting content this week.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <p class="price-name">Starter</p>
+        <div class="price-amount">$297<span>/mo</span></div>
+        <p class="price-desc">Perfect for getting started with consistent content.</p>
+        <ul class="price-features">
+          <li>12 posts per month</li>
+          <li>1 platform</li>
+          <li>2 revision rounds</li>
+          <li>Monthly content calendar</li>
+          <li>Email support</li>
+        </ul>
+        <a href="https://buy.stripe.com/6oUbJ22lZ2bUfn0gqEdnW04" class="price-btn" target="_blank">Get started</a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge">Most popular</div>
+        <p class="price-name">Hybrid Growth</p>
+        <div class="price-amount">$497<span>/mo</span></div>
+        <p class="price-desc">For businesses serious about building an audience with video.</p>
+        <ul class="price-features">
+          <li>4 Video Shorts per month</li>
+          <li>8 written posts per month</li>
+          <li>2 platforms</li>
+          <li>Unlimited revisions</li>
+          <li>Monthly content calendar</li>
+          <li>Priority turnaround (24h)</li>
+        </ul>
+        <a href="https://buy.stripe.com/7sY3cw8Kn03M1wa8YcdnW05" class="price-btn" target="_blank">Get started</a>
+      </div>
+      <div class="price-card">
+        <p class="price-name">Video Authority</p>
+        <div class="price-amount">$997<span>/mo</span></div>
+        <p class="price-desc">For brands ready to dominate YouTube, Facebook & TikTok.</p>
+        <ul class="price-features">
+          <li>10 Video Shorts per month</li>
+          <li>Raw footage processing</li>
+          <li>AI Hook & theme generation</li>
+          <li>3 platforms (YT, FB, IG/TikTok)</li>
+          <li>Unlimited revisions</li>
+          <li>Monthly content calendar</li>
+        </ul>
+        <a href="https://buy.stripe.com/3cI28s0dR5o6eiWb6kdnW06" class="price-btn" target="_blank">Get started</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <p class="section-tag">FAQ</p>
+    <h2 class="section-title">Common questions.</h2>
+    <div class="faq-list">
+      <details>
+        <summary>How does the video process work?</summary>
+        <p>You record a raw talking-head video (even on your phone) or send us a podcast link. You upload it to your Client Portal. Our AI extracts the most engaging clips, writes the hooks, and formats them for short-form platforms.</p>
+      </details>
+      <details>
+        <summary>What platforms do you write for?</summary>
+        <p>We optimize video for YouTube Shorts, TikTok, and Instagram Reels. We repurpose the transcripts into written content for LinkedIn and Twitter/X.</p>
+      </details>
+      <details>
+        <summary>What if I don't like a hook or edit?</summary>
+        <p>Request a change — we'll redo it. Growth and Video Authority plans include unlimited revisions. Starter includes 2 revision rounds per month.</p>
+      </details>
+      <details>
+        <summary>Do I need to be a professional editor?</summary>
+        <p>Not at all. You just need to press record. We handle the creative direction, clipping, and copy. You just review and approve.</p>
+      </details>
+      <details>
+        <summary>How fast do I get my first assets?</summary>
+        <p>Within 48 hours of uploading your raw footage to the Client Portal. Most clients receive their first batch the next business day.</p>
+      </details>
+      <details>
+        <summary>Is there a contract?</summary>
+        <p>No contracts. Pay month to month. Cancel anytime with 7 days notice. We're confident you'll stay because the content works.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT FORM -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="form-wrap">
+      <h2>Get Your Free Content Plan</h2>
+      <p style="margin-bottom: 8px;">Fill this out to get your first custom content plan within 48 hours.</p>
+      <p style="color: var(--accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 32px;">✓ No credit card required. Review your plan before upgrading.</p>
+      <form id="contact-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onsubmit="handleSubmit(event)">
+        <input type="hidden" name="form-name" value="contact" />
+        <input type="hidden" name="bot-field" style="display:none" />
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" name="name" placeholder="Jane Smith" required />
+        </div>
+        <div class="field">
+          <label>Business email</label>
+          <input type="email" name="email" placeholder="jane@yourbusiness.com" required />
+        </div>
+        <div class="field">
+          <label>Business name</label>
+          <input type="text" name="business" placeholder="Acme Consulting" required />
+        </div>
+        <div class="field">
+          <label>Your industry</label>
+          <input type="text" name="industry" placeholder="e.g. Real estate, coaching, e-commerce..." required />
+        </div>
+        <div class="field">
+          <label>Which platform do you want to grow?</label>
+          <select name="platform">
+            <option>LinkedIn</option>
+            <option>Instagram</option>
+            <option>Twitter / X</option>
+            <option>TikTok / YouTube Shorts</option>
+            <option>Multiple platforms</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Which plan interests you?</label>
+          <select name="plan">
+            <option>Starter — $297/mo</option>
+            <option>Growth — $497/mo (most popular)</option>
+            <option>Video Authority — $997/mo</option>
+            <option>Not sure yet</option>
+          </select>
+        </div>
+        <button type="submit" class="submit-btn">Send My Request →</button>
+      </form>
+      <div id="form-success">
+        ✓ Got it! We'll be in touch within 24 hours with your content plan.
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 ContentAI. All rights reserved. · AI-powered content for growing businesses.</p>
+</footer>
+
+<script>
+  function handleSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById('contact-form');
+    const success = document.getElementById('form-success');
+    const btn = form.querySelector('.submit-btn');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(new FormData(form)).toString()
+    })
+    .then(() => {
+      form.style.display = 'none';
+      success.style.display = 'block';
+    })
+    .catch(() => {
+      form.style.display = 'none';
+      success.style.display = 'block';
+    });
+  }
+</script>
+</body>
+</html>

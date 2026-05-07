@@ -1,0 +1,38 @@
+[
+  {
+    "id": "delivery-001",
+    "client": "Luna Advisory",
+    "engagement": "Monthly operations retainer",
+    "title": "Finalize KPI dashboard",
+    "dueAt": "2026-04-25T17:00:00.000Z",
+    "status": "In review",
+    "blocker": null,
+    "owner": "Avery",
+    "createdAt": "2026-04-25T09:30:00.000Z",
+    "updatedAt": "2026-04-25T09:30:00.000Z"
+  },
+  {
+    "id": "delivery-002",
+    "client": "Cedar & Pine",
+    "engagement": "CRM cleanup sprint",
+    "title": "Map sales stages to new pipeline",
+    "dueAt": "2026-04-26T17:00:00.000Z",
+    "status": "Blocked",
+    "blocker": "Waiting on deal history export",
+    "owner": "Richard",
+    "createdAt": "2026-04-25T09:35:00.000Z",
+    "updatedAt": "2026-04-25T09:35:00.000Z"
+  },
+  {
+    "id": "delivery-003",
+    "client": "Northline Media",
+    "engagement": "Content system setup",
+    "title": "Approve onboarding workspace",
+    "dueAt": "2026-04-28T17:00:00.000Z",
+    "status": "On track",
+    "blocker": null,
+    "owner": "Jules",
+    "createdAt": "2026-04-25T09:40:00.000Z",
+    "updatedAt": "2026-04-25T09:40:00.000Z"
+  }
+]

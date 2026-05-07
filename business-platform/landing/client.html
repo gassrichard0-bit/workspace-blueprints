@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Portal | Asset Upload</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070b0f;
+      --surface: #0f1419;
+      --surface2: #161d26;
+      --border: rgba(255,255,255,0.07);
+      --accent: #00e5a0;
+      --accent-dim: rgba(0,229,160,0.12);
+      --text: #f0f4f8;
+      --muted: #8492a6;
+      --white: #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 40px;
+      background: rgba(7,11,15,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .nav-cta {
+      background: transparent; color: var(--text); font-weight: 600;
+      padding: 10px 22px; border-radius: 999px; font-size: 0.9rem;
+      border: 1px solid var(--border);
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { border-color: rgba(255,255,255,0.3); }
+
+    /* HERO & FORM */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      padding: 140px 24px 80px;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(0,229,160,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin: 0 auto 16px;
+    }
+    .hero p {
+      max-width: 52ch; font-size: 1.1rem;
+      color: var(--muted); margin: 0 auto 40px; line-height: 1.65;
+    }
+
+    .form-container {
+      width: 100%; max-width: 500px;
+      background: var(--surface2); padding: 40px;
+      border-radius: 24px; border: 1px solid var(--border);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      text-align: left;
+    }
+    .field { margin-bottom: 24px; }
+    .field label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: var(--white); }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 14px 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text); font-size: 1rem;
+      font-family: inherit; transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: var(--accent);
+    }
+    .submit-btn {
+      width: 100%; padding: 16px; border: none;
+      background: var(--accent); color: #000; font-weight: 700; font-size: 1rem;
+      border-radius: 12px; cursor: pointer; transition: opacity 0.2s;
+    }
+    .submit-btn:hover { opacity: 0.88; }
+    #form-success {
+      display: none; padding: 16px; border-radius: 12px;
+      background: rgba(0,229,160,0.1); color: var(--accent);
+      border: 1px solid var(--accent); font-weight: 600; text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">ContentAI</a>
+    <a href="/" class="nav-cta">Back to Home</a>
+  </nav>
+
+  <section class="hero">
+    <h1>Client Portal</h1>
+    <p>Securely submit your raw video assets or context for this month's content pipeline.</p>
+    
+    <div class="form-container">
+      <form id="client-asset-form" name="client_assets" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onsubmit="handleSubmit(event)">
+        <input type="hidden" name="form-name" value="client_assets" />
+        <p class="hidden" style="display:none"><label>Don’t fill this out if you're human: <input name="bot-field" /></label></p>
+        
+        <div class="field">
+          <label>Your Name</label>
+          <input type="text" name="name" placeholder="Sarah Jenkins" required />
+        </div>
+        <div class="field">
+          <label>Your Email</label>
+          <input type="email" name="email" placeholder="sarah@yourbusiness.com" required />
+        </div>
+        <div class="field">
+          <label>Raw Video Assets Link</label>
+          <input type="url" name="videoUrl" placeholder="Google Drive, Dropbox, or WeTransfer link..." required />
+        </div>
+        <div class="field">
+          <label>Context / Notes for the Editor</label>
+          <textarea name="notes" rows="4" placeholder="Any specific hooks, topics, or timestamps you want us to focus on?"></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Submit Assets →</button>
+      </form>
+      <div id="form-success">
+        ✓ Assets received securely. We'll start processing them!
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(formData).toString()
+      })
+      .then(() => {
+        form.style.display = "none";
+        document.getElementById("form-success").style.display = "block";
+      })
+      .catch((error) => alert(error));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "client-1777251341535",
+    "name": "Cedar & Pine",
+    "primaryContact": "Elena Price",
+    "offer": "Operations retainer",
+    "onboardingStatus": "In progress",
+    "deliveryStatus": "Not started",
+    "owner": "Richard",
+    "niche": "",
+    "audience": "",
+    "platform": "LinkedIn",
+    "contentFormat": "Written",
+    "videoAssetsUrl": "",
+    "createdAt": "2026-04-27T00:55:41.535Z",
+    "updatedAt": "2026-04-27T00:55:41.535Z"
+  },
+  {
+    "id": "client-001",
+    "name": "Harbor Health",
+    "primaryContact": "Marcus Wu",
+    "offer": "Delivery platform buildout",
+    "onboardingStatus": "Blocked",
+    "deliveryStatus": "Not started",
+    "owner": "Richard",
+    "createdAt": "2026-04-25T09:00:00.000Z",
+    "updatedAt": "2026-04-25T09:00:00.000Z"
+  },
+  {
+    "id": "client-002",
+    "name": "Luna Advisory",
+    "primaryContact": "Sofia Patel",
+    "offer": "Retainer operations support",
+    "onboardingStatus": "Complete",
+    "deliveryStatus": "On track",
+    "owner": "Avery",
+    "createdAt": "2026-04-25T09:05:00.000Z",
+    "updatedAt": "2026-04-25T09:05:00.000Z"
+  },
+  {
+    "id": "client-003",
+    "name": "Cedar & Pine",
+    "primaryContact": "Evan Brooks",
+    "offer": "CRM cleanup and automation",
+    "onboardingStatus": "In progress",
+    "deliveryStatus": "Needs review",
+    "owner": "Richard",
+    "createdAt": "2026-04-25T09:10:00.000Z",
+    "updatedAt": "2026-04-25T09:10:00.000Z"
+  }
+]
