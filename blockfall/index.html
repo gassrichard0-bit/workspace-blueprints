@@ -6021,6 +6021,10 @@ function netSendPresence(){
   try{ roomApi.presence(p); }catch(e){}
 }
 function netReadPeers(){
+  if(p2pOn){                       // peer-to-peer covers everyone, signed in or not
+    for(var pk in peerMeshes) if(pk.indexOf("p2p:")!==0) dropAvatar(pk);
+    return;
+  }
   if(!roomApi){ netPeerList=[]; peerCount=0; return; }
   var list=[], seen={}, i;
   try{ list=roomApi.peers()||[]; }catch(e){ return; }
@@ -6046,14 +6050,19 @@ function netReadPeers(){
     m.rotation.y=(typeof pd.r==="number")?pd.r:0;
     m.scale.setScalar(pd.car?1.35:1);
   }
-  for(var k in peerMeshes) if(!seen[k]) dropAvatar(k);
+  for(var k in peerMeshes) if(k.indexOf("p2p:")!==0&&!seen[k]) dropAvatar(k);
   peerCount=n;
   netPeerList=info;
 }
 
 // ---- block edits travel as small batches
 function netQueueEdit(x,y,z,t){
-  if(!roomApi||!netTopicOk||netApplying) return;
+  if(netApplying) return;
+  if(p2pOn){
+    p2pOut.push(x,y,z,t);
+    if(p2pOut.length>480) p2pOut.splice(0,p2pOut.length-480);
+  }
+  if(!roomApi||!netTopicOk) return;
   netOutbox.push(x,y,z,t);
   if(netOutbox.length>240) netOutbox.splice(0,netOutbox.length-240);
 }
@@ -6088,10 +6097,241 @@ function netApplyEdits(list){
   netApplying=false;
 }
 
+// ---------------------------------------------------------------- peer to peer
+// The Claude room only admits signed-in viewers, so two people standing in the
+// same world on the public link never see each other. This is the channel that
+// works for everyone: the browsers talk straight to one another and the world
+// code is the room name. Whoever gets there first holds the room open and passes
+// everyone else's position along; if they leave, the rest race to take it over.
+var P2P_LIB="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js";
+var P2P_LIB2="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js";
+var p2p=null, p2pHost=false, p2pConns=[], p2pRoom="", p2pStates={}, p2pMe="",
+    p2pOn=false, p2pErr="", p2pRaw="", p2pLoading=false, p2pOut=[], p2pLastRoom="", p2pTried=false;
+
+function p2pOpts(){
+  var o=window.__P2P||null;
+  if(o){
+    var c={host:o.host,port:o.port,path:o.path,secure:!!o.secure,debug:o.debug||0};
+    if(o.config) c.config=o.config;
+    return c;
+  }
+  return {debug:0};
+}
+// the room name both sides must agree on, derived from the world code
+function p2pRoomId(){
+  var c=worldCode();
+  if(!c) return "";
+  if(c.length>24){                      // a dreamed world's code is far too long for an id
+    var h=0;
+    for(var i=0;i<c.length;i++) h=(h*31+c.charCodeAt(i))>>>0;
+    c=c.charAt(0)+h.toString(36);
+  }
+  return "bf1"+c.toUpperCase().replace(/[^A-Z0-9]/g,"");
+}
+var p2pWait=[];
+function p2pLoad(cb){
+  if(window.Peer){ cb(); return; }
+  p2pWait.push(cb);
+  if(p2pLoading) return;             // already fetching; the queue will be served
+  p2pLoading=true;
+  cb=function(){ var q=p2pWait.splice(0,p2pWait.length);
+                 for(var i=0;i<q.length;i++) try{ q[i](); }catch(e){} };
+  function add(src,next){
+    var s=document.createElement("script");
+    s.src=src;
+    s.onload=function(){ p2pLoading=false; cb(); };
+    s.onerror=next;
+    document.head.appendChild(s);
+  }
+  add(P2P_LIB,function(){
+    add(P2P_LIB2,function(){
+      p2pLoading=false;
+      p2pErr="Couldn't load the peer-to-peer library.";
+    });
+  });
+}
+function p2pDrop(){
+  if(p2p){ try{ p2p.destroy(); }catch(e){} }
+  p2p=null; p2pHost=false; p2pConns=[]; p2pStates={}; p2pOn=false;
+  for(var k in peerMeshes) if(k.indexOf("p2p:")===0) dropAvatar(k);
+}
+function p2pJoin(){
+  var room=p2pRoomId();
+  if(!room) return;
+  p2pLastRoom=room;
+  p2pLoad(function(){
+    if(!window.Peer) return;
+    p2pDrop();
+    p2pRoom=room;
+    p2pSeek(room,0);
+  });
+}
+function p2pMaybeRejoin(){
+  if(!p2pTried) return;
+  var r=p2pRoomId();
+  if(r&&r!==p2pLastRoom) p2pJoin();   // includes the very first join, after the link is read
+}
+// Look for whoever is already holding the room before trying to hold it yourself,
+// and decide by a timeout rather than by an error code: brokers disagree about what
+// they call an id that is already taken, and guessing wrong strands the second
+// player outside the room.
+function p2pSeek(room,tries){
+  // never stop trying: the other player may simply not have opened the link yet
+  if(tries>4) p2pErr="Looking for anyone else in this world\u2026";
+  var pr;
+  try{ pr=new Peer(p2pOpts()); }catch(e){ p2pErr="Couldn't start."; return; }
+  p2p=pr; p2pHost=false;
+  var settled=false;
+  var giveUp=setTimeout(function(){
+    if(settled) return;
+    settled=true;
+    try{ pr.destroy(); }catch(e){}
+    if(p2pRoom===room) p2pClaim(room,tries);
+  },9000);          // a real handshake across the internet needs longer than a local one
+  pr.on("open",function(){
+    p2pMe=pr.id;
+    var c;
+    try{ c=pr.connect(room+"H",{reliable:false}); }catch(e){ return; }
+    if(!c) return;
+    c.on("open",function(){
+      if(settled) return;
+      settled=true; clearTimeout(giveUp);
+      p2pConns=[c]; p2pOn=true; p2pErr="";
+    });
+    c.on("data",function(d){ p2pClientData(d); });
+    c.on("close",function(){ p2pOn=false; p2pElect(room); });
+    c.on("error",function(){});
+  });
+  pr.on("error",function(e){
+    var t=e&&e.type;
+    p2pRaw=(t||"")+": "+((e&&e.message)||"");
+    if(settled) return;
+    if(t==="peer-unavailable"){          // nobody is holding it, so take it
+      settled=true; clearTimeout(giveUp);
+      try{ pr.destroy(); }catch(x){}
+      if(p2pRoom===room) p2pClaim(room,tries);
+    }
+  });
+  pr.on("disconnected",function(){ try{ pr.reconnect(); }catch(e){} });
+}
+function p2pClaim(room,tries){
+  var pr;
+  try{ pr=new Peer(room+"H",p2pOpts()); }catch(e){ p2pErr="Couldn't start."; return; }
+  p2p=pr; p2pHost=false;
+  var settled=false;
+  pr.on("open",function(){
+    settled=true;
+    p2pHost=true; p2pOn=true; p2pErr=""; p2pMe=pr.id;
+  });
+  pr.on("connection",function(c){
+    p2pConns.push(c);
+    c.on("data",function(d){ p2pHostData(c,d); });
+    c.on("close",function(){ p2pDropConn(c); });
+    c.on("error",function(){ p2pDropConn(c); });
+  });
+  pr.on("error",function(e){
+    var t=e&&e.type;
+    p2pRaw=(t||"")+": "+((e&&e.message)||"");
+    if(settled) return;
+    settled=true;
+    try{ pr.destroy(); }catch(x){}
+    // somebody beat us to it; go back round and join them instead
+    var wait=(tries<4)?(400+Math.random()*900):(5000+Math.random()*3000);
+    setTimeout(function(){ if(p2pRoom===room) p2pSeek(room,tries+1); },wait);
+  });
+  pr.on("disconnected",function(){ try{ pr.reconnect(); }catch(e){} });
+}
+function p2pElect(room){
+  // whoever was holding the room left; wait a random moment so we do not all pile in
+  setTimeout(function(){
+    if(p2pRoom!==room) return;
+    p2pDrop();
+    p2pRoom=room;
+    p2pSeek(room,0);
+  },300+Math.random()*1200);
+}
+function p2pDropConn(c){
+  for(var i=0;i<p2pConns.length;i++) if(p2pConns[i]===c){ p2pConns.splice(i,1); break; }
+  if(c&&c.peer) delete p2pStates[c.peer];
+}
+function p2pHostData(c,d){
+  if(!d) return;
+  if(d.t==="s"&&d.p){ p2pStates[c.peer]=d.p; }
+  else if(d.t==="e"&&d.c){ netApplyEdits(d.c); p2pSendAll({t:"e",c:d.c},c); }
+}
+function p2pClientData(d){
+  if(!d) return;
+  if(d.t==="all") p2pStates=d.s||{};
+  else if(d.t==="e"&&d.c) netApplyEdits(d.c);
+}
+function p2pSendAll(msg,except){
+  for(var i=0;i<p2pConns.length;i++){
+    var c=p2pConns[i];
+    if(c===except) continue;
+    try{ if(c.open) c.send(msg); }catch(e){}
+  }
+}
+function p2pMyState(){
+  return {x:Math.round((driving?driving.x:pos.x)*10)/10,
+          y:Math.round((driving?driving.y:pos.y)*10)/10,
+          z:Math.round((driving?driving.z:pos.z)*10)/10,
+          r:Math.round(yaw*100)/100,
+          car:driving?1:0, n:myName||"", sd:seed};
+}
+function p2pTick(){
+  if(!p2p||!p2pOn) return;
+  var mine=p2pMyState();
+  if(p2pHost){
+    p2pStates[p2pMe]=mine;
+    p2pSendAll({t:"all",s:p2pStates});
+  }else{
+    var c=p2pConns[0];
+    try{ if(c&&c.open) c.send({t:"s",p:mine}); }catch(e){}
+  }
+  p2pDraw();
+}
+function p2pFlushEdits(){
+  if(!p2pOn||!p2pOut.length) return;
+  var b=p2pOut.splice(0,120);
+  if(p2pHost) p2pSendAll({t:"e",c:b});
+  else{
+    var c=p2pConns[0];
+    try{ if(c&&c.open) c.send({t:"e",c:b}); }catch(e){}
+  }
+}
+function p2pDraw(){
+  var seen={}, n=0, info=[], k;
+  for(k in p2pStates){
+    var s=p2pStates[k];
+    if(!s||k===p2pMe) continue;
+    if(s.sd!==undefined&&s.sd!==seed) continue;
+    var key="p2p:"+k;
+    seen[key]=1; n++;
+    var m=peerMeshes[key]||(peerMeshes[key]=makeAvatar(k));
+    m.visible=true;
+    m.position.set(s.x,s.y||0,s.z);
+    m.rotation.y=(typeof s.r==="number")?s.r:0;
+    m.scale.setScalar(s.car?1.35:1);
+    info.push({me:false,name:s.n||"Player",world:W.name,same:true,ready:true,
+               code:"",guest:true,col:"#"+peerColor(k).getHexString()});
+  }
+  for(k in peerMeshes) if(k.indexOf("p2p:")===0&&!seen[k]) dropAvatar(k);
+  peerCount=n;
+  info.unshift({me:true,name:myName||"You",world:W.name,same:true,ready:true,
+                code:worldCode(),guest:false,col:"#"+peerColor(p2pMe||"me").getHexString()});
+  netPeerList=info;
+  netState="live"; netErr="";
+}
+
 function netInit(){
   if(netAsked) return;
   netAsked=true;
-  if(!window.claude||!window.claude.use){ netState="unavailable"; netErr="This page is not running inside Claude."; return; }
+  p2pTried=true;      // the room is joined from rebuildWorld, once the world is settled
+  if(!window.claude||!window.claude.use){
+    netState="starting";
+    netErr="Connecting you to anyone else in this world\u2026";
+    return;
+  }
   window.claude.use("user").then(function(u){
     userApi=u||null;
     if(userApi&&userApi.me){
@@ -6787,7 +7027,7 @@ function frame(now){
     stepDrops(dt,now);
     stepCars(dt,now);
     netTimer+=dt;
-    if(netTimer>0.1){ netTimer=0; netSendPresence(); netReadPeers(); netFlush(); }
+    if(netTimer>0.1){ netTimer=0; p2pTick(); p2pFlushEdits(); netSendPresence(); netReadPeers(); netFlush(); }
     physTick();
     chunkVisTimer+=dt;
     if(chunkVisTimer>0.45){ chunkVisTimer=0; updateChunkVis(); }
@@ -6796,7 +7036,7 @@ function frame(now){
   }
   if(paused&&!elMenu.hidden){
     netMenuT=(netMenuT||0)+dt;
-    if(netMenuT>1){ netMenuT=0; netSendPresence(); netReadPeers(); renderNetBox(); }
+    if(netMenuT>1){ netMenuT=0; p2pTick(); netSendPresence(); netReadPeers(); renderNetBox(); }
   }
   if(cloudTex){ cloudTex.offset.x=(now*0.0000055)%1; cloudTex.offset.y=(now*0.0000021)%1; }
   engineAudio();
@@ -6900,6 +7140,7 @@ function rebuildWorld(subtitle){
   elSeed.textContent="SEED "+seed+" · "+W.style.toUpperCase();
   var co2=document.getElementById("codeOut"); if(co2) co2.value=worldCode();
   syncURL();
+  p2pMaybeRejoin();
   elBar.style.width="0%";
   Object.keys(chunks).forEach(function(k){
     chunks[k].forEach(function(m){ chunkGroup.remove(m); m.geometry.dispose(); });
