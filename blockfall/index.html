@@ -5674,6 +5674,28 @@ function drawMap(){
     mapCtx.fillStyle="#ffb347";
     mapCtx.fillRect(b.pos.x/WX*s-2,b.pos.z/WZ*s-2,4,4);
   }
+  // everyone else in this world, so you can walk towards each other
+  for(var pk in peerMeshes){
+    var pm=peerMeshes[pk];
+    if(!pm||!pm.visible) continue;
+    var ox=pm.position.x/WX*s, oz=pm.position.z/WZ*s;
+    var pc=pm.userData&&pm.userData.col;
+    mapCtx.beginPath();
+    mapCtx.arc(ox,oz,3.4,0,Math.PI*2);
+    mapCtx.fillStyle=pc?("#"+pc.getHexString()):"#8fd0ff";
+    mapCtx.fill();
+    mapCtx.lineWidth=1.3;
+    mapCtx.strokeStyle="rgba(0,0,0,.8)";
+    mapCtx.stroke();
+    // a tick showing which way they are facing
+    mapCtx.save();
+    mapCtx.translate(ox,oz);
+    mapCtx.rotate(-pm.rotation.y);
+    mapCtx.strokeStyle=pc?("#"+pc.getHexString()):"#8fd0ff";
+    mapCtx.lineWidth=1.6;
+    mapCtx.beginPath(); mapCtx.moveTo(0,-3.4); mapCtx.lineTo(0,-6.6); mapCtx.stroke();
+    mapCtx.restore();
+  }
   // player, pointing where you look
   var px=pos.x/WX*s, pz=pos.z/WZ*s;
   mapCtx.save();
@@ -5993,7 +6015,7 @@ function makeAvatar(key){
     new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.55,fog:false}));
   pin.position.y=2.6;
   g.add(body); g.add(head); g.add(face); g.add(l1); g.add(l2); g.add(pin);
-  g.userData.head=head; g.userData.face=face;
+  g.userData.head=head; g.userData.face=face; g.userData.col=col;
   peerGroup.add(g);
   return g;
 }
