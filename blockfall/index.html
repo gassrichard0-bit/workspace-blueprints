@@ -145,7 +145,7 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
 .card h2{font-family:var(--display);font-size:clamp(15px,4.4vw,19px);margin:0 0 4px;letter-spacing:.02em}
 .card .sub{margin:6px 0 16px;color:var(--muted);font-size:13.5px;line-height:1.55;max-width:48ch}
 .card .note{margin:-8px 0 16px;color:var(--text);opacity:.82;font-size:13.5px;line-height:1.5;font-style:italic}
-.keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0 0 18px;align-items:baseline}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0 0 18px;align-items:baseline;max-height:min(40vh,330px);overflow-y:auto;overscroll-behavior:contain;padding-right:6px}
 .keys dt{font-family:var(--display);font-size:10.5px;color:var(--accent);letter-spacing:.04em;white-space:nowrap}
 .keys dd{margin:0;color:var(--muted)}
 .row{display:flex;flex-wrap:wrap;gap:8px}
@@ -4708,6 +4708,36 @@ function worldPrompt(text){
     "Commit to the mood. A world at dusk should really look like dusk, and a cold world should be cold everywhere. JSON only."
   ].join("\n");
 }
+// json() rejects `invalid_json` when the reply is not clean JSON, but hands back
+// everything Claude wrote on err.text. A fence or a sentence of preamble is the
+// usual cause, so pull the object out rather than charge the player another ask.
+function extractJSON(t){
+  if(!t||typeof t!=="string") return null;
+  var start=t.indexOf("{");
+  while(start>=0){
+    var depth=0, inStr=false, esc=false;
+    for(var i=start;i<t.length;i++){
+      var c=t.charAt(i);
+      if(esc){ esc=false; continue; }
+      if(c==="\\"){ if(inStr) esc=true; continue; }
+      if(c==='"'){ inStr=!inStr; continue; }
+      if(inStr) continue;
+      if(c==="{") depth++;
+      else if(c==="}"){
+        depth--;
+        if(depth===0){
+          try{
+            var v=JSON.parse(t.slice(start,i+1));
+            if(v&&typeof v==="object") return v;
+          }catch(e){}
+          break;
+        }
+      }
+    }
+    start=t.indexOf("{",start+1);
+  }
+  return null;
+}
 function runAsk(){
   if(askBusy) return;
   var text=(elAskText.value||"").trim();
@@ -4721,13 +4751,14 @@ function runAsk(){
   elAskStatus.textContent=(askMode==="build")?"Drafting…":((askMode==="story")?"Writing…":"Dreaming…");
   var site=askTarget, mode=askMode;
   var prompt=(mode==="build")?architectPrompt(text,site):((mode==="story")?storyPrompt(text):worldPrompt(text));
-  sampleApi.json(prompt,{
+  var sampleP=sampleApi.json(prompt,{
     modelTier:"default",
     onText:function(ev){
       var n=(ev&&ev.text)?ev.text.length:0;
       elAskStatus.textContent=((mode==="build")?"Drafting… ":((mode==="story")?"Writing… ":"Dreaming… "))+n+" characters";
     }
-  }).then(function(plan){
+  });
+  function onPlan(plan){
     askBusy=false; elAskGo.disabled=false;
     if(mode==="story"){
       closeAsk(false);
@@ -4750,14 +4781,23 @@ function runAsk(){
       closeAsk(false);
       rebuildWorld("Claude dreamed this one up. Step in.");
     }
-  },function(err){
+  }
+  sampleP.then(onPlan,function(err){
+    var code=err&&err.code;
+    // a fence or a line of preamble is the usual cause; rescue it rather
+    // than make the player describe the whole thing over again
+    if(code==="invalid_json"){
+      var rescued=extractJSON(err&&err.text);
+      if(rescued){ onPlan(rescued); return; }
+    }
     askBusy=false; elAskGo.disabled=false;
     elAskStatus.className="seed err";
-    var code=err&&err.code;
     if(code==="not_granted") elAskStatus.textContent="You turned the request down, so nothing changed.";
     else if(code==="rate_limited") elAskStatus.textContent="Too many requests at once. Wait a moment, then try again.";
     else if(code==="cancelled") elAskStatus.textContent="Cancelled.";
-    else elAskStatus.textContent="That came back unusable. Try describing it a different way.";
+    else if(code==="invalid_json") elAskStatus.textContent="Claude's answer wasn't usable. Try describing it a different way.";
+    else if(code==="prompt_too_large") elAskStatus.textContent="That description is too long. Try a shorter one.";
+    else elAskStatus.textContent="That came back unusable"+(code?(" ("+code+")"):"")+". Try describing it a different way.";
   });
 }
 // match what was typed against the built-in content, by name, then by position
@@ -6749,6 +6789,32 @@ window.addEventListener("orientationchange",function(){ setTimeout(resize,160); 
 
 // ---------------------------------------------------------------- boot
 var restoredPos=false;
+var worldFails=0;
+// A recipe Claude dreamed up can describe a world the generator cannot actually
+// build. Before this, such a throw vanished inside the setTimeout and the
+// progress bar sat at "Shaping..." forever with nothing left to click. Now the
+// menu comes back, says what happened, and drops you onto solid ground.
+function worldFailed(err,stage){
+  try{ console.error("Blockfall: world build failed while "+stage, err); }catch(e){}
+  var msg=(err&&err.message)?String(err.message):String(err);
+  paused=true;
+  elMenu.hidden=false; elBarWrap.hidden=true;
+  elRow.hidden=false; elWorldChips.hidden=false;
+  elSub.textContent="This world wouldn't build \u2014 it failed while "+stage+
+    " ("+msg.slice(0,80)+"). Pick one below, or press RESEED.";
+  if(worldFails>=1) return;          // never loop on a fallback that also fails
+  worldFails++;
+  var keys=Object.keys(PRESET_WORLDS);
+  if(!keys.length) return;
+  W=sanitizeRecipe(PRESET_WORLDS[keys[0]]);
+  seed=(Math.random()*1e9)|0;
+  edits.clear(); lastBuild=null; selected=0; story=null;
+  try{ beam.visible=false; }catch(e){}
+  restoredPos=false;
+  setTimeout(function(){
+    rebuildWorld("That one wouldn't build, so here's solid ground instead.");
+  },1200);
+}
 function rebuildWorld(subtitle){
   paused=true;
   elMenu.hidden=false; elRow.hidden=true; elBarWrap.hidden=false;
@@ -6774,6 +6840,7 @@ function rebuildWorld(subtitle){
   applyRecipeLook();
   buildHotbar();
   setTimeout(function(){
+    try{
     generate(seed);
     applyEdits();
     relight(0,WX-1,0,WZ-1);
@@ -6791,11 +6858,12 @@ function rebuildWorld(subtitle){
     });
     var k=0;
     (function next(){
+      try{
       var budget=performance.now()+16;
       while(k<list.length && performance.now()<budget){ meshChunk(list[k][0],list[k][1],list[k][2]); k++; }
-      elBar.style.width=Math.round(k/list.length*100)+"%";
-      if(k<list.length) requestAnimationFrame(next);
-      else{
+      elBar.style.width=(list.length?Math.round(k/list.length*100):100)+"%";
+      if(k<list.length){ requestAnimationFrame(next); return; }
+      {
         if(!restoredPos){
           spawn();
           // if this world has a city, start on its streets
@@ -6843,8 +6911,11 @@ function rebuildWorld(subtitle){
                          :"Break blocks to collect them. E opens your inventory.");
           },1400);
         }
+        worldFails=0;
       }
+      }catch(e){ worldFailed(e,"building the view"); }
     })();
+    }catch(e){ worldFailed(e,"shaping the land"); }
   },30);
 }
 function usePreset(key){
