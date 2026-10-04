@@ -4407,6 +4407,18 @@ function renderNetBox(){
     }
     html+="</ul>";
   }
+  // peer-to-peer status, so there is something concrete to point at when two
+  // people are in the same world and still cannot see one another
+  var ps="";
+  if(typeof p2pRoom!=="undefined"){
+    if(p2pOn) ps="Peer link: "+(p2pHost?"holding the room":"joined a room")+
+                 " \u00b7 "+(p2pRoom||"?")+" \u00b7 "+peerCount+" with you";
+    else if(typeof Peer==="undefined") ps="Peer link: loading the library\u2026";
+    else if(!p2pRoom) ps="Peer link: no room yet";
+    else ps="Peer link: looking for "+p2pRoom+(p2pRaw?(" \u00b7 "+p2pRaw):"");
+  }
+  if(ps) html+='<div style="margin-top:6px;font-size:10.5px;opacity:.75;word-break:break-all">'+
+               ps.replace(/</g,"&lt;")+'</div>';
   el.innerHTML=html;
   var btns=el.getElementsByClassName("njoin");
   for(var b=0;b<btns.length;b++){
