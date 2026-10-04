@@ -187,9 +187,10 @@ button.act:focus-visible,.slot:focus-visible,.tbtn:focus-visible,.chip:focus-vis
 .coderow{display:flex;gap:6px;align-items:center;margin-top:9px}
 .codelab{font-family:var(--display);font-size:9px;letter-spacing:.07em;color:var(--accent);white-space:nowrap}
 .coderow input{
-  flex:1 1 auto;min-width:0;padding:8px 9px;border-radius:4px;border:1px solid var(--edge);
-  background:rgba(255,255,255,.06);color:var(--text);font-family:var(--display);font-size:11px;
-  letter-spacing:.06em;-webkit-user-select:text;user-select:text;touch-action:auto;-webkit-appearance:none
+  flex:1 1 auto;min-width:0;padding:9px;border-radius:4px;border:1px solid var(--edge);
+  background:rgba(255,255,255,.06);color:var(--text);font-family:var(--display);font-size:16px;
+  letter-spacing:.04em;-webkit-user-select:text;user-select:text;touch-action:auto;
+  -webkit-touch-callout:default;-webkit-appearance:none
 }
 .coderow input[readonly]{color:var(--accent);background:rgba(255,179,71,.07)}
 .coderow input::placeholder{font-family:var(--ui);letter-spacing:0;font-size:11.5px;color:var(--muted)}
@@ -4474,19 +4475,22 @@ document.getElementById("codeCopy").addEventListener("click",function(){
 // The address worth sending: the public copy, which needs no account. Written in
 // at publish time, because the sandbox cannot read its own URL.
 var GAME_URL="https://gassrichard0-bit.github.io/workspace-blueprints/blockfall/";
+// The link carries the world, so there is nothing to copy and nothing to paste:
+// opening it lands you on the same land, in the same city, on the same roads.
+function worldLink(){ return GAME_URL+"#"+worldCode(); }
 function inviteText(){
-  var code=worldCode();
   var lines=[
     "Come play Blockfall with me:",
-    GAME_URL,
     "",
-    "Press PLAY, open the pause menu, paste this world code and press GO:",
+    worldLink(),
     "",
-    code,
+    "Open that and you land straight in my world — same land, same city, same roads.",
+    "No account needed, it just opens.",
     "",
-    "That drops you into the exact world I'm in — same land, same city, same roads.",
+    "If your messages app cuts the end off that link, press PLAY, open the pause",
+    "menu, and paste this into the world code box instead:",
     "",
-    "No account needed — it just opens."
+    worldCode()
   ];
   return lines.join("\n");
 }
@@ -4508,23 +4512,24 @@ document.getElementById("shareBtn").addEventListener("click",function(){
   var txt=inviteText();
   document.getElementById("shareText").value=txt;
   document.getElementById("shareHint").textContent=
-    "This has the game link and your world code in it. Paste it into a message to send.";
+    "The link in here opens straight into this world. Paste it into a message to send.";
   box.hidden=false;
   // some viewers allow the native share sheet; try it, and fall back to copying
   var shared=false;
   if(navigator.share){
     try{
-      navigator.share({title:"Blockfall",text:txt,url:GAME_URL}).then(function(){ shared=true; },function(){});
+      navigator.share({title:"Blockfall",text:txt,url:worldLink()}).then(function(){ shared=true; },function(){});
     }catch(e){}
   }
   if(!shared) copyText(txt,"Link and code copied. Paste it into a message to him.");
 });
 document.getElementById("linkCopy").addEventListener("click",function(){
   var box=document.getElementById("shareBox");
-  document.getElementById("shareText").value=GAME_URL;
-  document.getElementById("shareHint").textContent="Just the game link.";
+  var lk=worldLink();
+  document.getElementById("shareText").value=lk;
+  document.getElementById("shareHint").textContent="The game link, with this world built into it.";
   box.hidden=false;
-  copyText(GAME_URL,"Link copied.");
+  copyText(lk,"Link copied — it opens straight into this world.");
 });
 document.getElementById("shareCopy").addEventListener("click",function(){
   copyText(inviteText(),"Invite copied.");
@@ -4532,10 +4537,40 @@ document.getElementById("shareCopy").addEventListener("click",function(){
 document.getElementById("shareClose").addEventListener("click",function(){
   document.getElementById("shareBox").hidden=true;
 });
+// Saying "that is not a code" teaches nobody anything. Say what shape a code is,
+// and where theirs is sitting.
+function codeHelp(v){
+  var t=String(v||"").trim();
+  if(t.length>40) return "I couldn't find a code in that. Paste just the code, or the whole link.";
+  var tag=t.charAt(0).toUpperCase();
+  if(/^[A-Z]$/.test(tag)&&"EFIMHX".indexOf(tag)<0)
+    return "\u201c"+t+"\u201d isn't a Blockfall code \u2014 they start with E, F, I, M, H or X. Yours is in the WORLD CODE box just above.";
+  return "I couldn't read \u201c"+t+"\u201d. Copy the code from the WORLD CODE box, or paste the link you were sent.";
+}
 document.getElementById("codeGo").addEventListener("click",function(){
-  var v=document.getElementById("codeIn").value;
-  if(!v.trim()){ toast("Paste a world code first."); return; }
-  if(!applyWorldCode(v)) toast("That is not a world code I can read.");
+  var box=document.getElementById("codeIn");
+  var v=box.value;
+  if(v.trim()){
+    if(!applyWorldCode(v))
+      toast(codeHelp(v));
+    return;
+  }
+  // An empty box on a phone usually means the paste menu never appeared, not that
+  // there is nothing to paste. Go and look in the clipboard before giving up.
+  if(navigator.clipboard&&navigator.clipboard.readText){
+    toast("Reading your clipboard…");
+    navigator.clipboard.readText().then(function(txt){
+      if(txt&&txt.trim()){
+        box.value=txt.trim();
+        if(applyWorldCode(txt)) return;
+        toast(codeHelp(txt));
+      }else toast("Nothing copied yet. Copy the code or the link, then press GO.");
+    },function(){
+      toast("Tap the box, hold it until PASTE appears, then press GO.");
+    });
+    return;
+  }
+  toast("Tap the box, hold it until PASTE appears, then press GO.");
 });
 document.getElementById("invClose").addEventListener("click",closeInv);
 document.getElementById("invMode2").addEventListener("click",function(){
@@ -6194,8 +6229,48 @@ function readWorldCode(code){
   if(tag==="H") return {seed:seedPart>>>0,recipe:sanitizeRecipe(defaultRecipe())};
   return null;
 }
+function uriPart(s){ try{ return decodeURIComponent(s); }catch(e){ return s; } }
+// A code almost never arrives on its own. It comes pasted as the whole invite
+// message, or stuck on the end of a link. Dig it out of whatever was handed over
+// instead of refusing the paste.
+function findWorldCode(text){
+  var t=String(text||""), r, i;
+  r=readWorldCode(t); if(r) return r;
+  // the tail of a link
+  var parts=t.split("#");
+  for(i=parts.length-1;i>0;i--){ r=readWorldCode(uriPart(parts[i])); if(r) return r; }
+  // its own line, which is how the invite lays it out
+  var lines=t.split(/[\r\n]+/);
+  for(i=0;i<lines.length;i++){
+    var ln=lines[i].replace(/^\s+/,"").replace(/\s+$/,"");
+    if(ln){ r=readWorldCode(ln); if(r) return r; }
+  }
+  // a dreamed world's code is unmistakable: it carries a dot
+  var toks=t.split(/[\s"'<>()\[\],;]+/);
+  for(i=0;i<toks.length;i++){
+    if(toks[i].indexOf(".")<1) continue;
+    var tk=toks[i], h=tk.lastIndexOf("#");
+    if(h>=0) tk=tk.slice(h+1);
+    r=readWorldCode(uriPart(tk)); if(r) return r;
+  }
+  return null;
+}
+// keep the address bar pointing at the world you are standing in, so a refresh
+// or a copied URL comes back here
+function syncURL(){
+  try{
+    if(window.history&&history.replaceState) history.replaceState(null,"","#"+worldCode());
+  }catch(e){}
+}
+function codeFromURL(){
+  try{
+    var h=String(location.hash||"").replace(/^#/,"");
+    if(h) return readWorldCode(uriPart(h));
+  }catch(e){}
+  return null;
+}
 function applyWorldCode(code){
-  var r=readWorldCode(code);
+  var r=findWorldCode(code);
   if(!r) return false;
   W=r.recipe; seed=r.seed;
   edits.clear(); lastBuild=null; selected=0; story=null;
@@ -6824,6 +6899,7 @@ function rebuildWorld(subtitle){
   elNote.hidden=!W.note; elNote.textContent=W.note?("“"+W.note+"”"):"";
   elSeed.textContent="SEED "+seed+" · "+W.style.toUpperCase();
   var co2=document.getElementById("codeOut"); if(co2) co2.value=worldCode();
+  syncURL();
   elBar.style.width="0%";
   Object.keys(chunks).forEach(function(k){
     chunks[k].forEach(function(m){ chunkGroup.remove(m); m.geometry.dispose(); });
@@ -6958,6 +7034,13 @@ function boot(state){
       if(typeof saved.opt.v==="number") viewDist=clamp(saved.opt.v,90,190);
     }
     sub="Back in "+W.name+", with "+edits.size+" block"+(edits.size===1?"":"s")+" you changed.";
+  }
+  // a link someone sent wins over whatever was saved here
+  var fromLink=codeFromURL();
+  if(fromLink){
+    W=fromLink.recipe; seed=fromLink.seed;
+    edits.clear(); lastBuild=null; selected=0; story=null; restoredPos=false;
+    sub="You followed a shared link — this is their world, exactly as they left it.";
   }
   rebuildWorld(sub);
   requestAnimationFrame(frame);
