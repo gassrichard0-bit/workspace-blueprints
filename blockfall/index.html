@@ -6052,6 +6052,14 @@ function netSendPresence(){
   if(myName) p.n=myName;
   var wc=worldCode();
   if(wc&&wc.length<1400) p.cd=wc;
+  // report the peer-link state alongside position, so a failure can be diagnosed
+  // without asking the player to read numbers off their own screen
+  var st;
+  if(p2pOn) st=(p2pHost?"host":"join")+peerCount;
+  else if(typeof Peer==="undefined") st="nolib";
+  else if(!p2pRoom) st="noroom";
+  else st="looking";
+  p.pl=st+(p2pRoom?("@"+p2pRoom):"")+(p2pRaw?("|"+String(p2pRaw).slice(0,70)):"");
   try{ roomApi.presence(p); }catch(e){}
 }
 function netReadPeers(){
