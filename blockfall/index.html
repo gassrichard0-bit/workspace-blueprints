@@ -4471,16 +4471,9 @@ document.getElementById("codeCopy").addEventListener("click",function(){
   }
   if(!done) toast("The code is selected — copy it by hand.");
 });
-// This page's own address. The sandbox cannot read it, so it is written in at
-// publish time; a referrer that looks like an artifact link overrides it.
+// The address worth sending: the public copy, which needs no account. Written in
+// at publish time, because the sandbox cannot read its own URL.
 var GAME_URL="https://gassrichard0-bit.github.io/workspace-blueprints/blockfall/";
-(function(){
-  try{
-    var r=document.referrer||"";
-    var m=r.match(/https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+/);
-    if(m) GAME_URL=m[0];
-  }catch(e){}
-})();
 function inviteText(){
   var code=worldCode();
   var lines=[
@@ -4491,7 +4484,9 @@ function inviteText(){
     "",
     code,
     "",
-    "That drops you into the exact world I'm in — same land, same city, same roads."
+    "That drops you into the exact world I'm in — same land, same city, same roads.",
+    "",
+    "No account needed — it just opens."
   ];
   return lines.join("\n");
 }
